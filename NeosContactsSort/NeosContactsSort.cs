@@ -13,7 +13,7 @@ namespace NeosContactsSort
     {
         public override string Name => "NeosContactsSort";
         public override string Author => "hantabaru1014";
-        public override string Version => "3.0.0";
+        public override string Version => "3.0.1";
         public override string Link => "https://github.com/hantabaru1014/NeosContactsSort";
 
         private static string BOT_USER_ID = "U-Resonite";
@@ -135,34 +135,26 @@ namespace NeosContactsSort
         }
 
         // lower numbers appear earlier in the list
-        private static int GetOrderNumber(Contact contact, ContactData status)
+        private static int GetOrderNumber(Contact contact, ContactData? data)
         {
             if (contact.ContactStatus == ContactStatus.Requested) // received requests
                 return 0;
-            
-            switch (status.CurrentStatus.OnlineStatus)
+            if (contact.IsPartiallyMigrated) // Not Migrated
+                return 10;
+
+            var currentStatus = data?.CurrentStatus;
+            return currentStatus?.OnlineStatus switch
             {
-                case OnlineStatus.Online:
-                    return 1;
-                case OnlineStatus.Away:
-                    return 2;
-                case OnlineStatus.Busy:
-                    return 3;
-                default: // Offline or Invisible
-                    if (contact.ContactStatus == ContactStatus.Accepted && !contact.IsAccepted)
-                    { // sent requests
-                        return 4;
-                    }
-                    else if (contact.ContactStatus != ContactStatus.SearchResult)
-                    { // offline or invisible
-                        return 5;
-                        // unsure how people with no relation, ignored, or blocked will appear... but they'll end up here too
-                    }
-                    else
-                    { // search results always come last
-                        return 6;
-                    }
-            }
+                OnlineStatus.Online => 1,
+                OnlineStatus.Away => 2,
+                OnlineStatus.Busy => 3,
+                // Offline or Invisible
+                _ => currentStatus?.SessionType switch
+                {
+                    UserSessionType.Headless or UserSessionType.ChatClient or UserSessionType.Bot => 4,
+                    _ => 5, // really Offline or Invisible
+                }
+            };
         }
 
         private static void UpdateContactsDialog(ContactsDialog instance)
