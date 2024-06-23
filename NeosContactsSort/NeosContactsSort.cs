@@ -13,7 +13,7 @@ namespace NeosContactsSort
     {
         public override string Name => "NeosContactsSort";
         public override string Author => "hantabaru1014";
-        public override string Version => "3.0.1";
+        public override string Version => "3.0.2";
         public override string Link => "https://github.com/hantabaru1014/NeosContactsSort";
 
         private static string BOT_USER_ID = "U-Resonite";
